@@ -21,15 +21,32 @@ def su_name():
     os.chdir(d)
     storage.child(path_on_cloud).download("temp.xlsx")
 
-    df = pd.DataFrame({'Name' : [name]})
-    writer = pd.ExcelWriter('temp.xlsx', engine='openpyxl')
-    writer.book = load_workbook('temp.xlsx')
-    writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
-    reader = pd.read_excel('temp.xlsx')
-    df.to_excel(writer, index=False, header=False, startrow=len(reader)+1)
-    writer.close()
+    excel_data_df = pd.read_excel('new.xlsx')
+    x=[' ']
+    #df# print whole sheet data
+    x = excel_data_df['Name'].tolist()
+    #x.append(' ')
+    i=0
+    p=0
+    a=0
+    for i in x:
+       if(i==name):
+          p=p+1
+          break;
 
-    path_local="new.xlsx"
-    storage.child(path_on_cloud).put(path_local)
+    if(p==0):
+        df = pd.DataFrame({'Name' : [name]})
+        writer = pd.ExcelWriter('temp.xlsx', engine='openpyxl')
+        writer.book = load_workbook('temp.xlsx')
+        writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
+        reader = pd.read_excel('temp.xlsx')
+        df.to_excel(writer, index=False, header=False, startrow=len(reader)+1)
+        writer.close()
 
-    os.remove('temp.xlsx')
+        path_local="new.xlsx"
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('temp.xlsx')
+
+    else:
+        print("Your name is already on the list, SIGN IN")
