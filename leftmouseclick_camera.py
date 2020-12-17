@@ -7,7 +7,7 @@ def click_event(event, x, y, flags, param):
         cam.release()
         cv2.destroyAllWindows()
 
-direc=r'D:/lol'
+direc=os.getcwd()
 os.chdir(direc)
         
 cam = cv2.VideoCapture(0)
