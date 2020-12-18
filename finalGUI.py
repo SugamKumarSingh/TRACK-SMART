@@ -64,8 +64,21 @@ def signUp():
                     congoWindow = tk.Toplevel(height=HEIGHT, width=WIDTH)
                     congoWindow.title('CONGRATULATIONS')
 
-                    congoMsg = tk.Message(congoWindow, text='CONGRATULATIONS...\nYou are successfully registered with TRACK SMART ATTENDENCE SYSTEM')
-                    congoMsg.config(font=('times', 64, 'italic'))
+                    def goToWlcmScreen():
+                        signUpWindow.destroy()
+                        upload_window.destroy()
+                        setPasswordWindow.destroy()
+                        setEmailWindow.destroy()
+                        congoWindow.destroy()
+                        setEmailWindow.destroy()
+
+                    congoMsg = tk.Message(congoWindow, text='Congratulations...\nYou are successfully registered\nwith\nTRACK SMART ATTENDENCE SYSTEM')
+                    congoMsg.config(justify='center', font=('times', 52, 'italic'))
+                    congoMsg.place(relx= 0.05, rely=0.075, relwidth=0.9, relheight=0.6)
+
+                    exitBtn = tk.Button(congoWindow, text="GO TO WELCOME SCREEN", font=('times', 36), command=goToWlcmScreen)
+                    exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
+                    
 
                 def destroy_ew():
                     setEmailWindow.destroy()
