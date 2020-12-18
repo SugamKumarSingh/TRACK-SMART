@@ -19,4 +19,5 @@ while cv2.waitKey(1):
     #cv2.waitKey(1)
     cv2.setMouseCallback("test", click_event)
     
+os.remove("unknown.jpg")
 
