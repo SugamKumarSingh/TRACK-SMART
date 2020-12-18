@@ -28,7 +28,7 @@ def signUp():
         confirmation = tk.Label(signUpWindow, bg=bgc, text="Are you sure you want to continue ?", font=('times', 36))
         confirmation.place(rely=0.6, relwidth=1)
 
-        backButton = tk.Button(signUpWindow, text="RETAKE", font=('times', 36))
+        backButton = tk.Button(signUpWindow, text="RETAKE", font=('times', 36), command=relaunchSignUp)
         backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
 
         yesButton = tk.Button(signUpWindow, text="CONFIRM", font=('times', 36), command=imgUploadScreen)
@@ -123,6 +123,10 @@ def signUp():
 
         back_button = tk.Button(upload_window, text="BACK", font=('times', 36), command=destroy_uw)
         back_button.place(relx=0.1, rely=0.8, relwidth=0.15)
+
+    def relaunchSignUp():
+        signUpWindow.destroy()
+        signUp()
 
     #here i have added frame to our GUI for name entry
     entryFrame = tk.Frame(signUpWindow, bg=bgc, bd=10)
