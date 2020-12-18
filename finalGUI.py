@@ -47,6 +47,26 @@ def signUp():
                 setEmailWindow = tk.Toplevel(height=HEIGHT, width=WIDTH)
                 setEmailWindow.title('SET EMAIL')
 
+                def confirm_submit():
+                    email_label = tk.Label(setEmailWindow, text="Are you sure you want to continue?", font=('times', 36))
+                    email_label.place(rely=0.5, relwidth=1)
+
+                    confirmationFinal = tk.Label(setEmailWindow, text="You won't be able to change it later.", font=('times', 36))
+                    confirmationFinal.place(rely=0.6, relwidth=1)
+
+                    backButton = tk.Button(setEmailWindow, text="BACK", font=('times', 36))
+                    backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
+
+                    finalButton = tk.Button(setEmailWindow, text="CONFIRM", font=('times', 36), command=submittedScreen)
+                    finalButton.place(relx=0.75, rely=0.8, relwidth = 0.15)
+
+                def submittedScreen():
+                    congoWindow = tk.Toplevel(height=HEIGHT, width=WIDTH)
+                    congoWindow.title('CONGRATULATIONS')
+
+                    congoMsg = tk.Message(congoWindow, text='CONGRATULATIONS...\nYou are successfully registered with TRACK SMART ATTENDENCE SYSTEM')
+                    congoMsg.config(font=('times', 64, 'italic'))
+
                 def destroy_ew():
                     setEmailWindow.destroy()
 
@@ -56,10 +76,8 @@ def signUp():
                 email = tk.Entry(setEmailWindow, font=('times', 36))
                 email.place(rely=0.3, relx=0.13, relwidth=0.50, relheight=0.08)
 
-                email_button = tk.Button(setEmailWindow, text="SUBMIT Email", font=('times', 36))#, command=submittedScreen
-                email_button.place(relx=0.68, rely=0.3, relwidth=0.18, relheight=0.08)
-
-
+                email_button = tk.Button(setEmailWindow, text="SUBMIT Email", font=('times', 36), command=confirm_submit)
+                email_button.place(relx=0.68, rely=0.3, relwidth=0.18, relheight=0.08)                
 
 
             def destroy_pw():
