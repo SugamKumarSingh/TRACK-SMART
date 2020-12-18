@@ -78,7 +78,7 @@ def confirm_name():
 	confirmation = tk.Label(canvas, bg=bgc, text="Are you sure you want to continue ?", font=('times', 36))
 	confirmation.place(rely=0.6, relwidth=1)
 
-	backButton = tk.Button(canvas, text="BACK", font=('times', 36))
+	backButton = tk.Button(canvas, text="RETAKE", font=('times', 36))
 	backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
 
 	yesButton = tk.Button(canvas, text="CONFIRM", font=('times', 36), command=next_screen)
