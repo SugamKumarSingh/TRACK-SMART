@@ -54,7 +54,7 @@ def signUp():
                     confirmationFinal = tk.Label(setEmailWindow, text="You won't be able to change it later.", font=('times', 36))
                     confirmationFinal.place(rely=0.6, relwidth=1)
 
-                    backButton = tk.Button(setEmailWindow, text="BACK", font=('times', 36))
+                    backButton = tk.Button(setEmailWindow, text="BACK", font=('times', 36), command=destroy_ew)
                     backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
 
                     finalButton = tk.Button(setEmailWindow, text="CONFIRM", font=('times', 36), command=submittedScreen)
@@ -79,7 +79,6 @@ def signUp():
                     exitBtn = tk.Button(congoWindow, text="GO TO WELCOME SCREEN", font=('times', 36), command=goToWlcmScreen)
                     exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
                     
-
                 def destroy_ew():
                     setEmailWindow.destroy()
 
@@ -91,7 +90,6 @@ def signUp():
 
                 email_button = tk.Button(setEmailWindow, text="SUBMIT Email", font=('times', 36), command=confirm_submit)
                 email_button.place(relx=0.68, rely=0.3, relwidth=0.18, relheight=0.08)                
-
 
             def destroy_pw():
                 setPasswordWindow.destroy()
@@ -107,7 +105,6 @@ def signUp():
 
             back_button = tk.Button(setPasswordWindow, text="BACK", font=('times', 36), command=destroy_pw)
             back_button.place(relx=0.1, rely=0.8, relwidth=0.15)
-
 
         def destroy_uw():
             upload_window.destroy()
@@ -143,12 +140,13 @@ def signUp():
     name_button = tk.Button(entryFrame, text="SUBMIT Name", font=('times', 36), command=confirm_name)
     name_button.place(relx=0.75, relheight=1, relwidth=0.25)
 
-
 #function for signin
 def signIn():
     signInWindow = tk.Toplevel(height=HEIGHT, width=WIDTH)
     signInWindow.title('SIGN IN for TRACK SMART Attendence')
 
+    welcomeUser = tk.Label(signInWindow, text="Welcome User,\n\nPlease say your passcode...", font=('times', 36))
+    welcomeUser.place(rely=0.2, relwidth=1)
 
 #to print welcome message
 welcomeMsg = tk.Message(canvas, text='WELCOME TO SMART TRACK ATTENDENCE SYSTEM')
@@ -162,8 +160,5 @@ signUpBtn.place(relx=0.6, rely=0.35, relheight=0.08, relwidth=0.15)
 #button for existing student
 signInBtn = tk.Button(canvas, text="SIGN IN", font=('times', 36), command=signIn)
 signInBtn.place(relx=0.6, rely=0.55, relheight=0.08, relwidth=0.15)
-
-
-
 
 root.mainloop()
