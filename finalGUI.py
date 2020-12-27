@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk
 
 HEIGHT = 2048
 WIDTH = 2048
@@ -8,7 +9,7 @@ root = tk.Tk()
 root.title('TRACK SMART Attendence System')
 
 #this to define canvas in GUI
-canvas = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg='lightpink')
+canvas = tk.Canvas(root, height=HEIGHT, width=WIDTH, bg='black')
 canvas.pack()
 
 #photoimage for icon
@@ -152,10 +153,17 @@ def signIn():
     welcomeUser = tk.Label(signInWindow, text="Welcome User,\n\nPlease say your passcode...", font=('times', 36))
     welcomeUser.place(rely=0.2, relwidth=1)
 
+image = Image.open("black_bioChem.jpeg")
+photo = ImageTk.PhotoImage(image)
+
+wlcmLabel = tk.Label(image=photo)
+wlcmLabel.place(relx= 0.1, rely=0.2, relwidth=0.36, relheight=0.6)
+
+"""
 #to print welcome message
 welcomeMsg = tk.Message(canvas, text='WELCOME TO SMART TRACK ATTENDENCE SYSTEM')
 welcomeMsg.config(bg='lightpink', font=('times', 48, 'italic'))
-welcomeMsg.place(relx= 0.05, rely=0.05, relwidth=0.4, relheight=0.9)
+welcomeMsg.place(relx= 0.05, rely=0.05, relwidth=0.4, relheight=0.9)"""
 
 #button for new user
 signUpBtn = tk.Button(canvas, text="SIGN UP", font=('times', 36), command=signUp)
