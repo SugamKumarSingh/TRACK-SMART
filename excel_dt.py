@@ -1,4 +1,19 @@
-import pandas as pd
+from openpyxl import load_workbook
+import datetime as dt
+
+check = input("Enter your name : ")
+dateTime = dt.datetime.now()
+day = dateTime.day
+wb = load_workbook("database.xlsx")
+ws = wb.worksheets[0]
+
+nameRange = ws.values['B2':'B27']
+for cell in nameRange:
+    print(cell)
+
+    name = str(cell)
+    if (name==check):
+        print(name)
 
 
 
@@ -7,6 +22,16 @@ import pandas as pd
 
 
 
+
+
+
+"""
+for row in ws.iter_rows(min_row=2, max_row=26, min_col=2, max_col=2, values_only=True):
+    for cell in row:
+        name = str(cell)
+        if (name!='None'):
+            print(cell)
+"""
 
 
 """
