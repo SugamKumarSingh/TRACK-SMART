@@ -12,9 +12,11 @@ from shutil import copyfile
 import cv2
 from pathlib import Path
 import shutil
+import pathlib
+import pandas as pd
 
 class Projectt:
-    def __init__(self, name,  HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable):
+    def __init__(self, name,  HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array):
         self.name=name
         self.HEIGHT=HEIGHT
         self.WIDTH=WIDTH
@@ -27,6 +29,122 @@ class Projectt:
         self.setEmailWindow=setEmailWindow
         self.upload_window=upload_window
         self.name_variable=name_variable
+        self.num=num
+        self.fn=fn
+        self.k=k
+        self.password_array=password_array
+
+
+    '''\
+    def remove_new_folders(self, d1):
+        os.chdir('..')
+        if os.path.exists(d1):
+                shutil.rmtree(d1)'''
+
+    def face_recognition_for_multiple_images(self):
+        def click_event(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                os.chdir(pathlib.Path(__file__).parent.absolute())
+                result=cv2.imwrite("unknown.jpg", frame)
+                cam.release()
+                cv2.destroyAllWindows()
+
+        direc=os.getcwd()
+        os.chdir(direc)
+                
+        cam = cv2.VideoCapture(0)
+        cam.set(3, 2048)
+        cam.set(4, 2048)
+        while cv2.waitKey(1):
+            ret, frame = cam.read()
+            if ret == False:
+                break
+            cv2.imshow("test", frame)
+            #cv2.waitKey(1)
+            cv2.setMouseCallback("test", click_event)
+
+
+        pd=pathlib.Path(__file__).parent.absolute()
+        #print(pd)
+        d='images'
+        path=os.path.join(pd, d)
+        mode=0o666
+        os.mkdir(path, mode)
+
+        config = {
+                      "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+                      "authDomain": "tympass-32736.firebaseapp.com",
+                      "databaseURL" : "https://tympass-32736.firebaseio.com",
+                      "projectId": "tympass-32736",
+                      "storageBucket": "tympass-32736.appspot.com",
+                      "messagingSenderId": "990276104410",
+                      "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+                      "measurementId": "G-7HF9TQ5QC1",
+                      "serviceAccount": "D:/lol/tympass-32736-firebase-adminsdk-73kvc-7991327d54.json"
+                      }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        #path_on_cloud="images"
+
+        all_files = storage.list_files()
+        for file in all_files:
+                #print(file.name)
+                d1=path
+                os.chdir(d1)
+                file.download_to_filename(file.name)
+
+        filelist = [f for f in os.listdir(d1) if f.endswith(".xlsx")]
+        for f in filelist:
+            os.remove(os.path.join(d1,f))
+
+        os.chdir('..')
+
+        try:    
+            #Add known images 
+            image_of_person = face_recognition.load_image_file('unknown.jpg')
+            person_face_encoding = face_recognition.face_encodings(image_of_person)[0]
+
+            for file_name in os.listdir(d1):
+                
+
+                #Load the file
+                newPic = face_recognition.load_image_file(file_name)
+
+                #Search every detected face
+                for face_encoding in face_recognition.face_encodings(newPic):
+
+
+                    results = face_recognition.compare_faces([person_face_encoding], face_encoding, 0.5)
+
+                    self.num=0
+                    
+                    #If match, show it
+                    if results[0] == True:
+                        #copyFile(file_name, "./img/saved" + file_name)
+                        self.num=self.num+1
+                        self.fn=Path(file_name).stem
+                        #print("Hi"+ str(fn))
+
+            os.remove('unknown.jpg')
+
+        except:
+            self.failed_signIn()
+            os.remove('unknown.jpg')
+            
+        if(self.num==1):
+            #print("Hi "+ str(fn))
+            self.signIn()
+        else:
+            self.failed_signIn()
+
+        
+
+
+        os.chdir('..')
+        if os.path.exists(d1):
+                shutil.rmtree(d1)
+
+
 
 
 
@@ -37,7 +155,7 @@ class Projectt:
                 cam.release()
                 cv2.destroyAllWindows()
 
-        direc=os.getcwd()
+        direc=pathlib.Path(__file__).parent.absolute()
         os.chdir(direc)
                 
         cam = cv2.VideoCapture(0)
@@ -123,12 +241,41 @@ class Projectt:
         os.remove("welcome.mp3")
 
 
+
+    def voice_outputt(self, mytext):      
+    
+            # Language in which you want to convert 
+            language = 'en'
+              
+            # Passing the text and language to the engine,  
+            # here we have marked slow=False. Which tells  
+            # the module that the converted audio should  
+            # have a high speed 
+            myobj = gTTS(text=str(mytext), lang=language, slow=False) 
+              
+            # Saving the converted audio in a mp3 file named 
+            # welcome
+            d=os.getcwd()
+            os.chdir(d)
+            myobj.save("welcome1.mp3") 
+
+            # Playing the converted file
+            #welcome = r'D:\voce\welcome.mp3'
+            #os.system("mpg123" + welcome) 
+
+            from playsound import playsound
+            playsound("welcome1.mp3")
+
+            os.remove("welcome1.mp3")
+
+
+
     def voice_input(self):
         r = sr.Recognizer()
         mic = sr.Microphone(device_index=0)
         with mic as source:
           r.adjust_for_ambient_noise(source, duration=0)
-          print("What is your name: ")
+          #print("What is your name: ")
           audio = r.listen(source, timeout=0)
           print("Wait till your voice is recognised......\n")
           d=r.recognize_google(audio)
@@ -181,7 +328,7 @@ class Projectt:
         signUpBtn.place(relx=0.6, rely=0.35, relheight=0.08, relwidth=0.15)
 
         #button for existing student
-        signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.signIn)
+        signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.face_recognition_for_multiple_images)
         signInBtn.place(relx=0.6, rely=0.55, relheight=0.08, relwidth=0.15)
 
         
@@ -388,6 +535,8 @@ class Projectt:
             self.name_variable= ' '
 
             self.name_variable=self.name.get()
+
+            
         
             name_label = tk.Label(self.signUpWindow, bg=self.bgc, text="You entered \"" + str(self.name_variable)+'\"' , font=('times', 36))
             name_label.place(rely=0.5, relwidth=1)
@@ -409,6 +558,7 @@ class Projectt:
         self.root.title('SIGN UP for TRACK SMART Attendence')
         self.signUpWindow = tk.Canvas(self.root,height=self.HEIGHT, width=self.WIDTH, bg=self.bgc)
         self.signUpWindow.pack()
+
         #self.signUpWindow.title('SIGN UP for TRACK SMART Attendence')
                 #here i have added frame to our GUI for name entry
         entryFrame = tk.Frame(self.signUpWindow, bg=self.bgc, bd=10)
@@ -418,7 +568,7 @@ class Projectt:
         self.name = tk.Entry(entryFrame, font=('times', 36))
         self.name.place(relwidth=0.6, relheight=1)
 
-        
+        self.voice_outputt("Input your name")
         
 
         self.vr_image = tk.PhotoImage(file = "vr_icon.png")
@@ -453,12 +603,48 @@ class Projectt:
     name_button.place(relx=0.75, relheight=1, relwidth=0.25)
     '''
     #function for signin
-    def signIn():
-        signInWindow = tk.Toplevel(height=HEIGHT, width=WIDTH)
-        signInWindow.title('SIGN IN for TRACK SMART Attendence')
+    def signIn(self):
+        self.root.destroy()
+        self.root=tk.Tk()
+        signInWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+        self.root.title('SIGN IN for TRACK SMART Attendence')
+        signInWindow.pack()
 
-        welcomeUser = tk.Label(signInWindow, text="Welcome User,\n\nPlease say your passcode...", font=('times', 36))
-        welcomeUser.place(rely=0.2, relwidth=1)
+        welcomeUser = tk.Label(signInWindow, text="Welcome " + str(self.fn) + ",\n\nPlease say your passcode...", font=('times', 36))
+        welcomeUser.place(rely=0.1, relwidth=1)
+
+        self.vr_image = tk.PhotoImage(file = "vr_icon.png")
+        self.vr_icon = self.vr_image.subsample(11,11)
+
+        vrPasscode = tk.Button(signInWindow, image = self.vr_image, font=('times', 36), command=self.passwordd)
+        vrPasscode.place(relx=0.4, rely=0.4, width=300, height=400)
+
+        backButton = tk.Button(signInWindow, text="BACK", font=('times', 36), command=self.remainn)
+        backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
+
+
+
+
+
+    def failed_signIn(self):
+        self.root.destroy()
+        self.root=tk.Tk()
+        signInWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+        self.root.title('SIGN IN for TRACK SMART Attendence')
+        signInWindow.pack()
+
+        welcomeUser = tk.Label(signInWindow, text="Sorry! Couldn't recognise you.", font=('times', 72))
+        welcomeUser.place(rely=0.4, relwidth=1)
+
+
+        backButton = tk.Button(signInWindow, text="BACK", font=('times', 36), command=self.remainn)
+        backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
+
+        cancelButton = tk.Button(signInWindow, text="EXIT", font=('times', 36), command=self.root.destroy)
+        cancelButton.place(relx=0.75, rely=0.8, relwidth = 0.15)
+
+
+        
 
     def mainn(self):
 
@@ -472,10 +658,112 @@ class Projectt:
         signUpBtn.place(relx=0.6, rely=0.35, relheight=0.08, relwidth=0.15)
 
         #button for existing student
-        signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.signIn)
+        signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.face_recognition_for_multiple_images)
         signInBtn.place(relx=0.6, rely=0.55, relheight=0.08, relwidth=0.15)
 
         #self.root.mainloop()
+
+
+
+
+    def verifiedScreen(self):
+                        self.root.destroy()
+                        self.root=tk.Tk()
+                        congoWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+                        congoWindow.pack()
+                        self.root.title('CONGRATULATIONS')
+                        congoMsg = tk.Message(congoWindow, text='Congratulations...\nYou have been marked as\n PRESENT.')
+                        congoMsg.config(justify='center', font=('times', 52, 'italic'))
+                        congoMsg.place(relx= 0.05, rely=0.075, relwidth=0.9, relheight=0.6)
+
+                        exitBtn = tk.Button(congoWindow, text="GO TO WELCOME SCREEN", font=('times', 36), command=self.remainn)
+                        exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
+
+
+    def unverifiedScreen(self):
+                        self.root.destroy()
+                        self.root=tk.Tk()
+                        congoWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+                        congoWindow.pack()
+                        self.root.title('FAILURE')
+                        congoMsg = tk.Message(congoWindow, text='Sorry...\nCouldn\'t understand \n Please Try Again.')
+                        congoMsg.config(justify='center', font=('times', 52, 'italic'))
+                        congoMsg.place(relx= 0.05, rely=0.075, relwidth=0.9, relheight=0.6)
+
+                        exitBtn = tk.Button(congoWindow, text="RETRY", font=('times', 36), command=self.signIn)
+                        exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
+
+
+
+    def passwordd(self):
+        config = {
+              "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL" : "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+            }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+
+
+        #name=input("Enter your name - ")
+
+        self.password_array=[]
+
+
+        self.password_array=df[df['Name']==self.fn]['Password'].tolist()
+        self.k=self.password_array[0]
+        print(self.k)
+
+        r = sr.Recognizer()
+        mic = sr.Microphone(device_index=0)
+        with mic as source:
+                  r.adjust_for_ambient_noise(source, duration=0)
+                  #print("What is your name: ")
+                  myobj = gTTS(text="Speak Now", lang='en', slow=False) 
+                  
+               
+                  myobj.save("welcome.mp3") 
+
+                
+
+                  from playsound import playsound
+                  playsound("welcome.mp3")
+
+                  os.remove("welcome.mp3")
+                  audio = r.listen(source, timeout=0)
+                  #print("Wait till your voice is recognised......\n")
+                  d=r.recognize_google(audio)
+                  print(d)
+                  #self.name.insert(0, d)
+
+
+
+        if (d==self.k):
+            self.verifiedScreen()
+
+        else:
+            self.unverifiedScreen()
+
+
+
+
+        #path_local='new.xlsx'
+        #storage.child(path_on_cloud).put(path_local)
+        #os.remove('new.xlsx')
+
+
 
 
 
@@ -492,8 +780,12 @@ vr_image=' '
 setEmailWindow= ' '
 upload_window=' '
 name_variable=' '
+num=0
+fn=' '
+k=' '
+password_array=' '
 
-p=Projectt(name,HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable)
+p=Projectt(name,HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array)
 p.starrt()
 #p.signUp()
 p.mainn()
