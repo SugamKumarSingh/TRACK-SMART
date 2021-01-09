@@ -14,9 +14,15 @@ from pathlib import Path
 import shutil
 import pathlib
 import pandas as pd
+import time 
+from datetime import datetime, timedelta
+from datetime import date
+import smtplib
+from openpyxl import load_workbook
+from PIL import Image, ImageTk
 
 class Projectt:
-    def __init__(self, name,  HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array):
+    def __init__(self, name,  HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array, chances, chances1, d1, setPasswordWindow, pazzword, pazzword_variable, emaill, emaill_variable):
         self.name=name
         self.HEIGHT=HEIGHT
         self.WIDTH=WIDTH
@@ -33,7 +39,14 @@ class Projectt:
         self.fn=fn
         self.k=k
         self.password_array=password_array
-
+        self.chances=chances
+        self.chances1=chances1
+        self.d1=d1
+        self.setPasswordWindow=setPasswordWindow
+        self.pazzword=pazzword
+        self.pazzword_variable=pazzword_variable
+        self.emaill=emaill
+        self.emaill_variable=emaill_variable
 
     '''\
     def remove_new_folders(self, d1):
@@ -89,13 +102,13 @@ class Projectt:
         all_files = storage.list_files()
         for file in all_files:
                 #print(file.name)
-                d1=path
-                os.chdir(d1)
+                self.d1=path
+                os.chdir(self.d1)
                 file.download_to_filename(file.name)
 
-        filelist = [f for f in os.listdir(d1) if f.endswith(".xlsx")]
+        filelist = [f for f in os.listdir(self.d1) if f.endswith(".xlsx")]
         for f in filelist:
-            os.remove(os.path.join(d1,f))
+            os.remove(os.path.join(self.d1,f))
 
         os.chdir('..')
 
@@ -104,7 +117,7 @@ class Projectt:
             image_of_person = face_recognition.load_image_file('unknown.jpg')
             person_face_encoding = face_recognition.face_encodings(image_of_person)[0]
 
-            for file_name in os.listdir(d1):
+            for file_name in os.listdir(self.d1):
                 
 
                 #Load the file
@@ -134,14 +147,20 @@ class Projectt:
         if(self.num==1):
             #print("Hi "+ str(fn))
             self.signIn()
+            os.chdir('..')
+            if os.path.exists(self.d1):
+                shutil.rmtree(d1)
         else:
             self.failed_signIn()
+            os.chdir('..')
+            if os.path.exists(self.d1):
+                shutil.rmtree(d1)
 
         
 
 
         os.chdir('..')
-        if os.path.exists(d1):
+        if os.path.exists(self.d1):
                 shutil.rmtree(d1)
 
 
@@ -276,6 +295,7 @@ class Projectt:
         with mic as source:
           r.adjust_for_ambient_noise(source, duration=0)
           #print("What is your name: ")
+          self.voice_outputt("Speak now")
           audio = r.listen(source, timeout=0)
           print("Wait till your voice is recognised......\n")
           d=r.recognize_google(audio)
@@ -287,12 +307,14 @@ class Projectt:
         self.HEIGHT = 2048 
         self.WIDTH = 2048
         self.bgc='lightyellow'
-        
-        #self.root = tk.Tk()
+
+        self.root.destroy()
+
+        self.root = tk.Tk()
         self.root.title('TRACK SMART Attendence System')
         
         #this to define canvas in GUI
-        self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, bg='lightpink')
+        self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, bg='black')
         self.canvas.pack()
 
         '''
@@ -309,12 +331,16 @@ class Projectt:
 
 
     def remainn(self):
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        if os.path.exists('images'):
+            shutil.rmtree('images')
         self.root.destroy()
         self.root=tk.Tk()
         self.root.title('TRACK SMART Attendence System')
         
         #this to define canvas in GUI
-        self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, bg='lightpink')
+        self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, bg='black')
         self.canvas.pack()
 
 
@@ -331,13 +357,21 @@ class Projectt:
         signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.face_recognition_for_multiple_images)
         signInBtn.place(relx=0.6, rely=0.55, relheight=0.08, relwidth=0.15)
 
-        
+        image = Image.open("black_bioChem.jpg")
+        photo = ImageTk.PhotoImage(image)
+
+        wlcmLabel = tk.Label(image=photo)
+        wlcmLabel.place(relx=0.1, rely=0.2, relwidth=0.36, relheight=0.6)
+
 
     def submittedScreen(self):
                         self.root.destroy()
                         self.root=tk.Tk()
                         congoWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
                         congoWindow.pack()
+                        #self.voice_outputt("Congratulations you are successfully registered with track smart attendance system")
+
+
                         self.root.title('CONGRATULATIONS')
                         congoMsg = tk.Message(congoWindow, text='Congratulations...\nYou are successfully registered\nwith\nTRACK SMART ATTENDENCE SYSTEM')
                         congoMsg.config(justify='center', font=('times', 52, 'italic'))
@@ -348,7 +382,12 @@ class Projectt:
 
 
 
+
     def confirm_submit(self):
+                        self.emaill_variable = ' '
+
+                        self.emaill_variable = self.emaill.get()
+
                         email_label = tk.Label(self.setEmailWindow, text="Are you sure you want to continue?", font=('times', 36))
                         email_label.place(rely=0.5, relwidth=1)
 
@@ -357,26 +396,47 @@ class Projectt:
 
                         
 
-                        finalButton = tk.Button(self.setEmailWindow, text="CONFIRM", font=('times', 36), command=self.submittedScreen)
+                        finalButton = tk.Button(self.setEmailWindow, text="CONFIRM", font=('times', 36), command=lambda:[self.submittedScreen(),self.add_new_email()])
                         finalButton.place(relx=0.75, rely=0.8, relwidth = 0.15)
 
                         backButton = tk.Button(self.setEmailWindow, text="BACK", font=('times', 36), command=self.toPasswordScreen)
                         backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
 
 
-    
+
+    def confirm_submit2(self):
+        self.pazzword_variable = ' '
+
+        self.pazzword_variable = self.pazzword.get()
+        email_label = tk.Label(self.setPasswordWindow, text="Are you sure you want to continue?", font=('times', 36), bg='lightyellow')
+        email_label.place(rely=0.5, relwidth=1)
+
+        confirmationFinal = tk.Label(self.setPasswordWindow, text="You won't be able to change it later.",
+                                     font=('times', 36), bg='lightyellow')
+        confirmationFinal.place(rely=0.6, relwidth=1)
+
+        finalButton = tk.Button(self.setPasswordWindow, text="CONFIRM", font=('times', 36), command=lambda:[self.toEmailScreen(), self.add_new_password()])
+        finalButton.place(relx=0.75, rely=0.8, relwidth=0.15)
+
+        backButton = tk.Button(self.setPasswordWindow, text="BACK", font=('times', 36), command=self.imgUploadScreen)
+        backButton.place(relx=0.1, rely=0.8, relwidth=0.15)
+
+
+
     def toEmailScreen(self):
                     self.root.destroy()
                     self.root=tk.Tk()
                     self.setEmailWindow = tk.Canvas(self.root,height=self.HEIGHT, width=self.WIDTH)
                     self.root.title('SET EMAIL')
                     self.setEmailWindow.pack()
+
+                    self.voice_outputt("Input your email")
                     
                     emailMsg = tk.Label(self.setEmailWindow, text="Please enter your email-ID below", font=('times', 36))
                     emailMsg.place(rely=0.15, relwidth=1)
 
-                    email = tk.Entry(self.setEmailWindow, font=('times', 36))
-                    email.place(rely=0.3, relx=0.13, relwidth=0.50, relheight=0.08)
+                    self.emaill = tk.Entry(self.setEmailWindow, font=('times', 36))
+                    self.emaill.place(rely=0.3, relx=0.13, relwidth=0.50, relheight=0.08)
 
                     email_button = tk.Button(self.setEmailWindow, text="SUBMIT Email", font=('times', 36), command=self.confirm_submit)
                     email_button.place(relx=0.68, rely=0.3, relwidth=0.18, relheight=0.08)                
@@ -431,6 +491,38 @@ class Projectt:
                 back_button.place(relx=0.1, rely=0.8, relwidth=0.15)
 
 
+    def PasswordScreen(self):
+        self.root.destroy()
+        self.root = tk.Tk()
+        self.root.title('SET PASSWORD')
+        self.setPasswordWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, bg=self.bgc)
+        self.setPasswordWindow.pack()
+
+        # self.signUpWindow.title('SIGN UP for TRACK SMART Attendence')
+        # here i have added frame to our GUI for name entry
+        entryFrame = tk.Frame(self.setPasswordWindow, bg=self.bgc, bd=10)
+        entryFrame.place(relx=0.5, rely=0.25, relwidth=0.8, relheight=0.1, anchor='n')
+
+        # entry field for name
+        self.pazzword = tk.Entry(entryFrame, font=('times', 36))
+        self.pazzword.place(relwidth=0.6, relheight=1)
+
+        self.voice_outputt("Input your password")
+        '''
+        self.vr_image = tk.PhotoImage(file="vr_icon.png")
+        self.vr_icon = self.vr_image.subsample(11, 11)
+
+        # button for voice recognition
+        vr_button = tk.Button(entryFrame, image=self.vr_icon, )
+        vr_button.place(relx=0.64, relheight=1, relwidth=0.07)
+        '''
+
+        # button for name
+        name_button = tk.Button(entryFrame, text="SUBMIT Password", font=('times', 36), command = self.confirm_submit2)
+        name_button.place(relx=0.65, relheight=1, relwidth=0.32)
+
+
+
     def resignUp(self):
         self.root.destroy()
         self.root=tk.Tk()
@@ -470,6 +562,7 @@ class Projectt:
             self.root.title('UPLOAD IMAGE')
             self.upload_window = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
             self.upload_window.pack()
+            self.voice_outputt("Upload your image")
             upload_label = tk.Label(self.upload_window, text="Upload Your Image for Face Recognistion", font=('times', 36))
             upload_label.place(rely=0.2, relwidth=1)
 
@@ -479,7 +572,7 @@ class Projectt:
             upload_button = tk.Button(self.upload_window, text="UPLOAD", font=('times', 36), command=self.openn)
             upload_button.place(relx=0.4, rely=0.55, relwidth=0.2)
 
-            proceed_button = tk.Button(self.upload_window, text="PROCEED", font=('times', 36), command=self.toPasswordScreen)
+            proceed_button = tk.Button(self.upload_window, text="PROCEED", font=('times', 36), command=self.PasswordScreen)
             proceed_button.place(relx=0.75, rely=0.8, relwidth=0.15)
 
             back_button = tk.Button(self.upload_window, text="BACK", font=('times', 36), command=self.signUp)
@@ -488,25 +581,25 @@ class Projectt:
 
 
 
-    def goToWlcmScreen():
+    def goToWlcmScreen(self):
                             self.signUpWindow.destroy()
                             upload_window.destroy()
-                            setPasswordWindow.destroy()
+                            self.setPasswordWindow.destroy()
                             setEmailWindow.destroy()
-                            congoWindow.destroy()
+                            self.congoWindow.destroy()
                             setEmailWindow.destroy()
 
     #def congo_screen():
 
                         
                         
-    def destroy_ew():
+    def destroy_ew(self):
                         setEmailWindow.destroy()
 
 
     #def email_screen():
-    def destroy_pw():
-                    setPasswordWindow.destroy()
+    def destroy_pw(self):
+                    self.setPasswordWindow.destroy()
 
 
     #def pw_screen():
@@ -547,8 +640,135 @@ class Projectt:
             backButton = tk.Button(self.signUpWindow, text="RETAKE", font=('times', 36), command=self.relaunchSignUp)
             backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
 
-            yesButton = tk.Button(self.signUpWindow, text="CONFIRM", font=('times', 36), command=self.imgUploadScreen)
+            yesButton = tk.Button(self.signUpWindow, text="CONFIRM", font=('times', 36), command=lambda: [
+                self.add_new_name(), self.imgUploadScreen()])
             yesButton.place(relx=0.75, rely=0.8, relwidth = 0.15)
+
+
+
+    #def add_new_email(self):
+
+
+
+
+
+    def add_new_name(self):
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+
+        path_on_cloud = "demo.xlsx"
+        # path_local=r'D:\lol\demo.xlsx';
+        # storage.child(path_on_cloud).put(path_local)
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        #name = input("Enter your name - ")
+        df = pd.DataFrame({'Name': [self.name_variable]})
+        writer = pd.ExcelWriter('new.xlsx', engine='openpyxl')
+        writer.book = load_workbook('new.xlsx')
+        writer.sheets = dict((ws.title, ws) for ws in writer.book.worksheets)
+        reader = pd.read_excel('new.xlsx')
+        df.to_excel(writer, index=False, header=False, startrow=len(reader) + 1)
+        writer.close()
+
+        # firebase = pyrebase.initialize_app(config)
+        # storage = firebase.storage()
+
+        path_on_cloud = "demo.xlsx"
+        path_local = "new.xlsx";
+        storage.child(path_on_cloud).put(path_local)
+        # d = os.getcwd
+        # os.chdir(d)
+        # storage.child(path_on_cloud).download("new.xlsx")
+        os.remove("new.xlsx")
+
+
+
+    def add_new_password(self):
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+
+        path_on_cloud = "demo.xlsx"
+        # path_local=r'D:\lol\demo.xlsx';
+        # storage.child(path_on_cloud).put(path_local)
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        #password = input("Enter your password - ")
+
+        df = pd.read_excel('new.xlsx')
+
+        df.loc[df['Name'] == self.name_variable, ['Password']] = str(self.pazzword_variable)
+
+        df.to_excel('new.xlsx', index=False)
+
+        path_on_cloud = "demo.xlsx"
+        path_local = "new.xlsx";
+        storage.child(path_on_cloud).put(path_local)
+        # d = os.getcwd
+        # os.chdir(d)
+        # storage.child(path_on_cloud).download("new.xlsx")
+        os.remove("new.xlsx")
+
+
+    def add_new_email(self):
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+
+        path_on_cloud = "demo.xlsx"
+        # path_local=r'D:\lol\demo.xlsx';
+        # storage.child(path_on_cloud).put(path_local)
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        password = input("Enter your email - ")
+
+        df = pd.read_excel('new.xlsx')
+
+        df.loc[df['Name'] == self.name_variable, ['email']] = str(self.emaill_variable)
+
+        df.to_excel('new.xlsx', index=False)
+
+        path_on_cloud = "demo.xlsx"
+        path_local = "new.xlsx";
+        storage.child(path_on_cloud).put(path_local)
+        # d = os.getcwd
+        # os.chdir(d)
+        # storage.child(path_on_cloud).download("new.xlsx")
+        os.remove("new.xlsx")
 
 
     #function for signup
@@ -604,23 +824,175 @@ class Projectt:
     '''
     #function for signin
     def signIn(self):
-        self.root.destroy()
-        self.root=tk.Tk()
-        signInWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
-        self.root.title('SIGN IN for TRACK SMART Attendence')
-        signInWindow.pack()
 
-        welcomeUser = tk.Label(signInWindow, text="Welcome " + str(self.fn) + ",\n\nPlease say your passcode...", font=('times', 36))
-        welcomeUser.place(rely=0.1, relwidth=1)
+        self.chances = tk.IntVar()
+        self.chances1= tk.IntVar()
 
-        self.vr_image = tk.PhotoImage(file = "vr_icon.png")
-        self.vr_icon = self.vr_image.subsample(11,11)
+        self.chances.set(3)
+        self.chances1.set(self.chances.get())
 
-        vrPasscode = tk.Button(signInWindow, image = self.vr_image, font=('times', 36), command=self.passwordd)
-        vrPasscode.place(relx=0.4, rely=0.4, width=300, height=400)
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
 
-        backButton = tk.Button(signInWindow, text="BACK", font=('times', 36), command=self.remainn)
-        backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
+        df = pd.read_excel('new.xlsx')
+
+        x = []
+        x = df[df['Name'] == self.fn]['Time']
+
+        k = x[0]
+
+
+        if(k==' '):
+            self.root.destroy()
+            self.root = tk.Tk()
+
+            signInWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+            self.root.title('SIGN IN for TRACK SMART Attendence')
+            signInWindow.pack()
+
+            welcomeUser = tk.Label(signInWindow, text="Welcome " + str(self.fn) + ",\n\nPlease say your passcode...",
+                                   font=('times', 36))
+            welcomeUser.place(rely=0.1, relwidth=1)
+
+            self.vr_image = tk.PhotoImage(file="vr_icon.png")
+            self.vr_icon = self.vr_image.subsample(11, 11)
+
+            vrPasscode = tk.Button(signInWindow, image=self.vr_image, font=('times', 36), command=self.passwordd)
+            vrPasscode.place(relx=0.4, rely=0.4, width=300, height=400)
+
+            backButton = tk.Button(signInWindow, text="BACK", font=('times', 36), command=self.remainn)
+            backButton.place(relx=0.1, rely=0.8, relwidth=0.15)
+
+            config = {
+                "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+                "authDomain": "tympass-32736.firebaseapp.com",
+                "databaseURL": "https://tympass-32736.firebaseio.com",
+                "projectId": "tympass-32736",
+                "storageBucket": "tympass-32736.appspot.com",
+                "messagingSenderId": "990276104410",
+                "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+                "measurementId": "G-7HF9TQ5QC1"
+            }
+            firebase = pyrebase.initialize_app(config)
+            storage = firebase.storage()
+            path_on_cloud = "demo.xlsx"
+            d = pathlib.Path(__file__).parent.absolute()
+            os.chdir(d)
+            storage.child(path_on_cloud).download("new.xlsx")
+
+            df = pd.read_excel('new.xlsx')
+
+            # name=input("Enter your name - ")
+
+            self.password_array = []
+
+            df.loc[df['Name'] == self.fn, ['Time']] = ' '
+
+            df.to_excel('new.xlsx', index=False)
+
+            config = {
+                "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+                "authDomain": "tympass-32736.firebaseapp.com",
+                "databaseURL": "https://tympass-32736.firebaseio.com",
+                "projectId": "tympass-32736",
+                "storageBucket": "tympass-32736.appspot.com",
+                "messagingSenderId": "990276104410",
+                "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+                "measurementId": "G-7HF9TQ5QC1"
+            }
+            firebase = pyrebase.initialize_app(config)
+            storage = firebase.storage()
+            path_on_cloud = "demo.xlsx"
+            path_local = 'new.xlsx';
+            storage.child(path_on_cloud).put(path_local)
+
+            os.remove('new.xlsx')
+
+        else:
+            k_updated = pd.to_datetime(k)
+
+        now = datetime.now()
+
+        #print(now)
+        #print(k_updated)
+
+        if(k_updated<now):
+            self.root.destroy()
+            self.root = tk.Tk()
+
+            signInWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+            self.root.title('SIGN IN for TRACK SMART Attendence')
+            signInWindow.pack()
+
+            welcomeUser = tk.Label(signInWindow, text="Welcome " + str(self.fn) + ",\n\nPlease say your passcode...", font=('times', 36))
+            welcomeUser.place(rely=0.1, relwidth=1)
+
+            self.vr_image = tk.PhotoImage(file = "vr_icon.png")
+            self.vr_icon = self.vr_image.subsample(11,11)
+
+            vrPasscode = tk.Button(signInWindow, image = self.vr_image, font=('times', 36), command=self.passwordd)
+            vrPasscode.place(relx=0.4, rely=0.4, width=300, height=400)
+
+            backButton = tk.Button(signInWindow, text="BACK", font=('times', 36), command=self.remainn)
+            backButton.place(relx=0.1, rely=0.8, relwidth = 0.15)
+
+            config = {
+                "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+                "authDomain": "tympass-32736.firebaseapp.com",
+                "databaseURL": "https://tympass-32736.firebaseio.com",
+                "projectId": "tympass-32736",
+                "storageBucket": "tympass-32736.appspot.com",
+                "messagingSenderId": "990276104410",
+                "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+                "measurementId": "G-7HF9TQ5QC1"
+            }
+            firebase = pyrebase.initialize_app(config)
+            storage = firebase.storage()
+            path_on_cloud = "demo.xlsx"
+            d = pathlib.Path(__file__).parent.absolute()
+            os.chdir(d)
+            storage.child(path_on_cloud).download("new.xlsx")
+
+            df = pd.read_excel('new.xlsx')
+
+            df.loc[df['Name'] == self.fn, ['Time']] = ' '
+
+            df.to_excel('new.xlsx', index=False)
+
+            config = {
+                "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+                "authDomain": "tympass-32736.firebaseapp.com",
+                "databaseURL": "https://tympass-32736.firebaseio.com",
+                "projectId": "tympass-32736",
+                "storageBucket": "tympass-32736.appspot.com",
+                "messagingSenderId": "990276104410",
+                "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+                "measurementId": "G-7HF9TQ5QC1"
+            }
+            firebase = pyrebase.initialize_app(config)
+            storage = firebase.storage()
+            path_on_cloud = "demo.xlsx"
+            path_local = 'new.xlsx';
+            storage.child(path_on_cloud).put(path_local)
+
+            os.remove('new.xlsx')
+
+        else:
+            self.tryAgainScreen()
 
 
 
@@ -644,13 +1016,37 @@ class Projectt:
         cancelButton.place(relx=0.75, rely=0.8, relwidth = 0.15)
 
 
+
+    def welcome_button(self):
+        HEIGHT = 2048
+        WIDTH = 2048
+        bgc = 'lightyellow'
+
+        self.root.destroy()
+        self.root = tk.Tk()
+        self.root.title('TRACK SMART Attendence System')
+
+        # this to define canvas in GUI
+        canvas = tk.Canvas(self.root, height=HEIGHT, width=WIDTH, bg='black')
+        canvas.pack()
+
+        btn_image = Image.open("black_bioChem.jpg")
+        btn_photo = ImageTk.PhotoImage(btn_image)
+
+        welcome_button = tk.Button(canvas, image=btn_photo, font=('times', 36), command = self.mainn)
+        welcome_button.place(relx=0.32, rely=0.2, relwidth=0.36, relheight=0.6)
+
+        self.root.mainloop()
         
 
     def mainn(self):
 
+        #self.root.destroy()
+        self.starrt()
+
         #to print welcome message
         welcomeMsg = tk.Message(self.canvas, text='WELCOME TO SMART TRACK ATTENDENCE SYSTEM')
-        welcomeMsg.config(bg='lightpink', font=('times', 48, 'italic'))
+        welcomeMsg.config(bg='black', font=('times', 48, 'italic'))
         welcomeMsg.place(relx= 0.05, rely=0.05, relwidth=0.4, relheight=0.9)
 
         #button for new user
@@ -661,7 +1057,13 @@ class Projectt:
         signInBtn = tk.Button(self.canvas, text="SIGN IN", font=('times', 36), command=self.face_recognition_for_multiple_images)
         signInBtn.place(relx=0.6, rely=0.55, relheight=0.08, relwidth=0.15)
 
-        #self.root.mainloop()
+        image = Image.open("black_bioChem.jpg")
+        photo = ImageTk.PhotoImage(image)
+
+        wlcmLabel = tk.Label(image=photo)
+        wlcmLabel.place(relx=0.1, rely=0.2, relwidth=0.36, relheight=0.6)
+
+        self.root.mainloop()
 
 
 
@@ -692,6 +1094,172 @@ class Projectt:
 
                         exitBtn = tk.Button(congoWindow, text="RETRY", font=('times', 36), command=self.signIn)
                         exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
+
+
+    def tryAgainTimeLimit(self):
+
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+        # print("Current Time = ", current_time)
+
+        # added_time = timedelta(minutes=15)
+
+        updated_time = now + timedelta(minutes=15)
+
+        updated_timee = updated_time.strftime("%H:%M:%S")
+
+        #name = input("Enter your name - ")
+
+        config = {
+              "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL" : "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+            }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+
+
+        #name=input("Enter your name - ")
+
+        self.password_array=[]
+
+        df.loc[df['Name'] == self.fn, ['Time']] = str(updated_timee)
+
+        df.to_excel('new.xlsx', index=False)
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        path_local = 'new.xlsx';
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('new.xlsx')
+
+        # print("Updated time = ", updated_timee)
+
+    def tryAgainScreen(self):
+        self.root.destroy()
+        self.root=tk.Tk()
+        retryWindow = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH)
+        retryWindow.pack()
+        self.root.title('RETRY')
+        backButton = tk.Button(retryWindow, text="BACK", font=('times', 36), command=self.remainn)
+        backButton.place(relx=0.1, rely=0.8, relwidth=0.15)
+
+        cancelButton = tk.Button(retryWindow, text="EXIT", font=('times', 36), command=self.root.destroy)
+        cancelButton.place(relx=0.75, rely=0.8, relwidth=0.15)
+
+        # define the countdown func. 
+        def countdown(t):      
+            while t: 
+                mins, secs = divmod(t, 60) 
+                timer = '{:02d}:{:02d}'.format(mins, secs) 
+                #self.root.destroy()
+                
+                retryMsg = tk.Message(retryWindow, text="Try again after \n" + timer + " \nminutes." + "\r" )
+                retryMsg.config(justify='center', font=('times', 52, 'italic'))
+                retryMsg.place(relx= 0.05, rely=0.075, relwidth=0.9, relheight=0.6)
+
+
+
+                self.root.update()
+                #exitBtn = tk.Button(retryWindow, text="GO TO WELCOME SCREEN", font=('times', 36))
+                #exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
+                time.sleep(1) 
+
+                t -= 1
+                
+             
+            #print('Fire in the hole!!') 
+          
+          
+        # input time in seconds 
+        #t = input("Enter the time in seconds: ") 
+          
+        # function call 
+        #countdown(int(t)) 
+
+
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+
+        x=[]
+        x=df[df['Name']=='Swapnil Pant']['Time']
+
+        k=x[0]
+
+        k_updated=pd.to_datetime(k)
+
+        diff = k_updated-now
+
+        if(k_updated>now):
+            countdown(int(diff.total_seconds()) )
+
+        #else:
+            #print('welcome')
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        path_local = 'new.xlsx';
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('new.xlsx')
+        os.chdir('..')
+        if os.path.exists(self.d1):
+            shutil.rmtree(self.d1)
 
 
 
@@ -725,7 +1293,7 @@ class Projectt:
         self.password_array=df[df['Name']==self.fn]['Password'].tolist()
         self.k=self.password_array[0]
         print(self.k)
-
+        '''
         r = sr.Recognizer()
         mic = sr.Microphone(device_index=0)
         with mic as source:
@@ -747,25 +1315,278 @@ class Projectt:
                   d=r.recognize_google(audio)
                   print(d)
                   #self.name.insert(0, d)
+                  '''
+
+        #print(self.chances.get())
+
+        if(self.chances.get()>0):
+            try:
+                r = sr.Recognizer()
+                mic = sr.Microphone(device_index=0)
+                with mic as source:
+                      r.adjust_for_ambient_noise(source, duration=0)
+                      #print("What is your name: ")
+                      myobj = gTTS(text="Speak Now", lang='en', slow=False)
+
+
+                      myobj.save("welcome.mp3")
 
 
 
-        if (d==self.k):
-            self.verifiedScreen()
+                      from playsound import playsound
+                      playsound("welcome.mp3")
 
-        else:
-            self.unverifiedScreen()
+                      os.remove("welcome.mp3")
+                      audio = r.listen(source, timeout=0)
+                      #print("Wait till your voice is recognised......\n")
+                      d=r.recognize_google(audio)
+                      print(d)
+                      #self.name.insert(0, d)
 
+            except:
+                myobj = gTTS(text="Sorry couldn not understand please speak again", lang='en', slow=False)
 
+                myobj.save("welcome.mp3")
 
+                from playsound import playsound
+                playsound("welcome.mp3")
 
+                os.remove("welcome.mp3")
+
+            if (d==self.k):
+                self.verifiedScreen()
+                self.chances.set(self.chances.get()-1)
+                self.chances1.set(self.chances.get())
+                self.append_new_date_column()
+                self.apply_present()
+                self.sending_mail()
+            elif(d!=self.k):
+                #unverifiedScreen()
+                #print('lol')
+                myobj = gTTS(text="Wrong Password Speak Again.", lang='en', slow=False) 
+                  
+               
+                myobj.save("welcome.mp3") 
+
+                
+
+                from playsound import playsound
+                playsound("welcome.mp3")
+
+                os.remove("welcome.mp3")
+                self.chances.set(self.chances.get()-1)
+                self.chances1.set(self.chances.get())
+                
+        elif(self.chances.get()==0):
+                print(self.chances.get())
+                self.tryAgainTimeLimit()
+                self.tryAgainScreen()
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        path_local = 'new.xlsx';
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('new.xlsx')
         #path_local='new.xlsx'
         #storage.child(path_on_cloud).put(path_local)
         #os.remove('new.xlsx')
 
 
+    def append_new_date_column(self):
+
+        today = date.today()
+
+        datee = today.strftime("%d/%m/%Y")
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+        length = len(df.columns)
+
+        try:
+            df.insert(length, str(datee), "ABSENT")
+            df.to_excel('new.xlsx', index=False)
+
+        except:
+            pass
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        path_local = 'new.xlsx';
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('new.xlsx')
 
 
+    def apply_present(self):
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+        today = date.today()
+
+        datee = today.strftime("%d/%m/%Y")
+
+        df.loc[df['Name'] == str(self.fn), [str(datee)]] = 'PRESENT'
+        df.to_excel('new.xlsx', index=False)
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        path_local = 'new.xlsx';
+        storage.child(path_on_cloud).put(path_local)
+
+        os.remove('new.xlsx')
+
+    def sending_mail(self):
+
+        config = {
+            "apiKey": "AIzaSyAXtE0fQeJSN8r1Omtyx5vTlsdyYrF9XpE",
+            "authDomain": "tympass-32736.firebaseapp.com",
+            "databaseURL": "https://tympass-32736.firebaseio.com",
+            "projectId": "tympass-32736",
+            "storageBucket": "tympass-32736.appspot.com",
+            "messagingSenderId": "990276104410",
+            "appId": "1:990276104410:web:a6d956ded09fc3c958b5e3",
+            "measurementId": "G-7HF9TQ5QC1"
+        }
+        firebase = pyrebase.initialize_app(config)
+        storage = firebase.storage()
+        path_on_cloud = "demo.xlsx"
+        d = pathlib.Path(__file__).parent.absolute()
+        os.chdir(d)
+        storage.child(path_on_cloud).download("new.xlsx")
+
+        df = pd.read_excel('new.xlsx')
+
+        today = date.today()
+
+        datee = today.strftime("%d/%m/%Y")
+
+        x = []
+        x = df[df['Name'] == str(self.fn)][str(datee)]
+        j = x[0]
+
+        y = []
+        y = df[df['Name'] == str(self.fn)]['email']
+        k = y[0]
+
+        print(k)
+        print(j)
+
+        yesterday = today - timedelta(days=1)
+        yesterday_datee = yesterday.strftime("%d/%m/%Y")
+        '''
+        z = []
+        z = df[df['Name'] == 'Swapnil Pant'][str(yesterday_datee)]
+        l = z[0]
+        '''
+        p = 0
+
+        if (j == 'PRESENT'):
+            p = p + 1
+
+        q = 0
+
+        if (j == 'ABSENT'):
+            q = q + 1
+
+        # creates SMTP session
+        s = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+
+        # start TLS for security
+        # s.starttls()
+
+        # Authentication
+        s.login("tracksmartattendance@gmail.com", "12345678a@")
+
+        # message to be sent
+        message = ("You were present on " + str(datee) + ".")
+        message1 = ("You were present on " + str(yesterday_datee) + ".")
+
+        print(message)
+        print(message1)
+
+        print(p)
+        print(q)
+
+        if (p == 1):
+            s.sendmail("tracksmartattendance@gmail.com", k, message)
+
+        if (q == 1):
+            s.sendmail("tracksmartattendance@gmail.com", k, message1)
+
+        else:
+            pass
+
+        s.quit()
+
+        os.remove('new.xlsx')
 
 
 name=' '
@@ -784,10 +1605,25 @@ num=0
 fn=' '
 k=' '
 password_array=' '
+chances=0
+chances1=0
+d1=' '
+setPasswordWindow=' '
+pazzword=' '
+pazzword_variable=' '
+emaill=' '
+emaill_variable=' '
 
-p=Projectt(name,HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array)
-p.starrt()
+
+p=Projectt(name,HEIGHT, WIDTH, bgc, vr_icon, canvas, root, signUpWindow, vr_image, setEmailWindow, upload_window, name_variable, num, fn, k, password_array, chances, chances1, d1, setPasswordWindow, pazzword, pazzword_variable, emaill, emaill_variable)
+#p.starrt()
 #p.signUp()
-p.mainn()
+p.welcome_button()
+#p.mainn()
+d = pathlib.Path(__file__).parent.absolute()
+os.chdir(d)
+if os.path.exists('images'):
+    shutil.rmtree('images')
+os.remove('new.xlsx')
 #print(p.name_variable)
 #print(p.name.get())
