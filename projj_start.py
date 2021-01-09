@@ -1034,7 +1034,7 @@ class Projectt:
         btn_photo = ImageTk.PhotoImage(btn_image)
 
         welcome_button = tk.Button(canvas, image=btn_photo, font=('times', 36), command = self.mainn)
-        welcome_button.place(relx=0.32, rely=0.2, relwidth=0.36, relheight=0.6)
+        welcome_button.place(relx=0.32, rely=0.2, relwidth=0.34, relheight=0.6)
 
         self.root.mainloop()
         
@@ -1061,7 +1061,7 @@ class Projectt:
         photo = ImageTk.PhotoImage(image)
 
         wlcmLabel = tk.Label(image=photo)
-        wlcmLabel.place(relx=0.1, rely=0.2, relwidth=0.36, relheight=0.6)
+        wlcmLabel.place(relx=0.1, rely=0.2, relwidth=0.33, relheight=0.6)
 
         self.root.mainloop()
 
@@ -1078,7 +1078,7 @@ class Projectt:
                         congoMsg.config(justify='center', font=('times', 52, 'italic'))
                         congoMsg.place(relx= 0.05, rely=0.075, relwidth=0.9, relheight=0.6)
 
-                        exitBtn = tk.Button(congoWindow, text="GO TO WELCOME SCREEN", font=('times', 36), command=self.remainn)
+                        exitBtn = tk.Button(congoWindow, text="GO TO WELCOME SCREEN", font=('times', 36), command=self.mainn)
                         exitBtn.place(relx=0.31,  rely=0.75, relheight=0.075, relwidth=0.38)
 
 
