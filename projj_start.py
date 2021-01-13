@@ -1623,7 +1623,7 @@ p.welcome_button()
 d = pathlib.Path(__file__).parent.absolute()
 os.chdir(d)
 if os.path.exists('images'):
-    shutil.rmtree('images') #only used
+    shutil.rmtree('images')
 os.remove('new.xlsx')
 #print(p.name_variable)
 #print(p.name.get())
